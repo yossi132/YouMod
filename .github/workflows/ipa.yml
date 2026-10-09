@@ -135,7 +135,10 @@ jobs:
         env:
           IPA_URL: ${{ inputs.ipa_url }}
         run: |
-          wget "$IPA_URL" --quiet --no-verbose -O youtube.ipa
+          # Convert ordinary Dropbox share URLs into direct-download URLs.
+          # Keep other hosts unchanged and preserve Dropbox share parameters.
+          DOWNLOAD_URL="$(python3 -c 'import sys; from urllib.parse import urlsplit, parse_qsl, urlencode, urlunsplit; u = urlsplit(sys.argv[1]); q = [(k, v) for k, v in parse_qsl(u.query, keep_blank_values=True) if k != "dl"]; q.append(("dl", "1")); print(urlunsplit(u._replace(query=urlencode(q))) if u.hostname in ("dropbox.com", "www.dropbox.com") else sys.argv[1])' "$IPA_URL")"
+          wget "$DOWNLOAD_URL" --quiet --no-verbose -O youtube.ipa
 
       - name: Validate IPA
         run: |
