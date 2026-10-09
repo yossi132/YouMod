@@ -5,7 +5,7 @@ on:
       repo:
         description: 'Repository to build from'
         required: true
-        default: 'Tonwalter888/YouMod'
+        default: 'yossi132/YouMod'
 
       branch:
         description: 'Branch to build from'
@@ -93,6 +93,12 @@ on:
       volboost:
         description: "Integrate VolumeBoostYT (Require iOS 16+)"
         default: true
+        required: false
+        type: boolean
+
+      publish_to_sidestore:
+        description: "Publish IPA in a PUBLIC release and update SideStore source; only if you have redistribution rights"
+        default: false
         required: false
         type: boolean
 
@@ -218,6 +224,12 @@ jobs:
           repository: ${{ inputs.repo }}
           ref: ${{ inputs.branch }}
           path: YouMod
+
+      - name: Checkout source publishing files
+        uses: actions/checkout@v7
+        with:
+          path: sidestore-publisher
+          persist-credentials: true
 
       - name: Clone Open in YouTube (Safari Extension)
         run: |
@@ -399,13 +411,48 @@ jobs:
           
           cyan -i youtube.ipa -o YouMod_${{ env.YT_VERSION }}_v${{ env.YOUMOD_VERSION }}.ipa -uwef $tweaks -n "${{ inputs.display_name }}" -b ${{ inputs.bundle_id }}
 
-      - name: Create a Draft Release
+      - name: Create a GitHub Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: youmod-ipa${{ github.run_number }}
           name: YouMod_${{ env.YT_VERSION }}_v${{ env.YOUMOD_VERSION }} (${{ github.run_number }}) 
           files: YouMod_${{ env.YT_VERSION }}_v${{ env.YOUMOD_VERSION }}.ipa
-          draft: true
+          draft: ${{ !inputs.publish_to_sidestore }}
+
+      - name: Publish SideStore metadata
+        if: ${{ inputs.publish_to_sidestore }}
+        env:
+          IPA_FILE: YouMod_${{ env.YT_VERSION }}_v${{ env.YOUMOD_VERSION }}.ipa
+          RELEASE_TAG: youmod-ipa${{ github.run_number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          DOWNLOAD_URL="https://github.com/${REPOSITORY}/releases/download/${RELEASE_TAG}/${IPA_FILE}"
+          # Do not advertise broken links to SideStore.
+          reachable=false
+          for i in 1 2 3 4 5; do
+            if curl -fsSIL --max-time 20 "$DOWNLOAD_URL" -o /dev/null; then
+              reachable=true
+              break
+            fi
+            sleep 3
+          done
+          if [ "$reachable" != true ]; then
+            echo "::error::Published IPA is not yet anonymously downloadable; source unchanged"
+            exit 1
+          fi
+          python3 sidestore-publisher/.github/scripts/update_sidestore_source.py \
+            --ipa "$IPA_FILE" \
+            --source sidestore-publisher/source.json \
+            --download-url "$DOWNLOAD_URL"
+          cd sidestore-publisher
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add source.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update SideStore source for ${RELEASE_TAG}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
 
       - name: Job Summary - Build Complete
         run: |
