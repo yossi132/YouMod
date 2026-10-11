@@ -44,6 +44,14 @@ def main():
     if bundle_id != "com.google.ios.youtube":
         raise ValueError(f"Unexpected bundle ID {bundle_id!r}; refusing to change the source")
 
+    app_description = (
+        f"YouTube {version} with YouMod {args.youmod_version}. "
+        if args.youmod_version else f"YouTube {version} with YouMod. "
+    ) + (
+        "Customize playback and interface settings, use SponsorBlock, "
+        "and access the optional tweaks selected for this build."
+    )
+
     source = json.loads(args.source.read_text(encoding="utf-8"))
     apps = source.setdefault("apps", [])
     if len(apps) > 1 or (apps and apps[0].get("bundleIdentifier") != bundle_id):
@@ -55,7 +63,7 @@ def main():
             "name": "YouTube (YouMod)",
             "bundleIdentifier": bundle_id,
             "developerName": "yossi132",
-            "localizedDescription": "Personal YouMod-enhanced YouTube builds.",
+            "localizedDescription": app_description,
             "iconURL": YOUTUBE_ICON_URL,
             "versions": [],
         }
@@ -63,6 +71,8 @@ def main():
 
     # Restore the standard YouTube icon even when older source data exists.
     app["iconURL"] = YOUTUBE_ICON_URL
+    # Refresh the app listing itself, not only the per-version release notes.
+    app["localizedDescription"] = app_description
 
     release = {
         "version": version,
@@ -84,6 +94,7 @@ def main():
     # all version data is supplied via the modern `versions` array.
     app["version"] = version
     app["versionDate"] = release["date"]
+    app["versionDescription"] = release["localizedDescription"]
     app["downloadURL"] = args.download_url
     app["size"] = release["size"]
     args.source.write_text(json.dumps(source, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
