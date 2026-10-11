@@ -7,7 +7,7 @@
       "name": "YouTube (YouMod)",
       "bundleIdentifier": "com.google.ios.youtube",
       "developerName": "yossi132",
-      "localizedDescription": "Personal YouMod-enhanced YouTube builds.",
+      "localizedDescription": "YouTube 21.37.4 with YouMod 2.0.0. Customize playback and interface settings, use SponsorBlock, and access the optional tweaks selected for this build.",
       "iconURL": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/YouTube_social_white_squircle_%282024%29.svg/500px-YouTube_social_white_squircle_%282024%29.svg.png",
       "versions": [
         {
@@ -21,7 +21,8 @@
       "version": "21.37.4",
       "versionDate": "2026-10-09T22:21:36Z",
       "downloadURL": "https://github.com/yossi132/YouMod/releases/download/youmod-ipa2/YouMod_21.37.4_v2.0.0.ipa",
-      "size": 122380859
+      "size": 122380859,
+      "versionDescription": "YouTube 21.37.4 with YouMod 2.0.0. Includes YouMod playback and interface customization, SponsorBlock, and the optional tweaks selected for this build."
     }
   ]
 }
