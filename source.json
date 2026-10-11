@@ -12,13 +12,14 @@
       "versions": [
         {
           "version": "21.37.4",
-          "date": "2026-10-09",
+          "date": "2026-10-09T22:21:36Z",
           "downloadURL": "https://github.com/yossi132/YouMod/releases/download/youmod-ipa2/YouMod_21.37.4_v2.0.0.ipa",
-          "size": 122380859
+          "size": 122380859,
+          "localizedDescription": "YouTube 21.37.4 with YouMod 2.0.0. Includes YouMod playback and interface customization, SponsorBlock, and the optional tweaks selected for this build."
         }
       ],
       "version": "21.37.4",
-      "versionDate": "2026-10-09",
+      "versionDate": "2026-10-09T22:21:36Z",
       "downloadURL": "https://github.com/yossi132/YouMod/releases/download/youmod-ipa2/YouMod_21.37.4_v2.0.0.ipa",
       "size": 122380859
     }
