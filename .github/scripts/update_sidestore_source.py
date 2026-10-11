@@ -65,6 +65,12 @@ def main():
     }
     previous = [item for item in app.get("versions", []) if item.get("version") != version]
     app["versions"] = [release, *previous]
+    # Older SideStore builds can require these app-level fields even when
+    # all version data is supplied via the modern `versions` array.
+    app["version"] = version
+    app["versionDate"] = release["date"]
+    app["downloadURL"] = args.download_url
+    app["size"] = release["size"]
     args.source.write_text(json.dumps(source, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"Updated SideStore source for {bundle_id} {version}; {len(app['versions'])} version(s)")
 
