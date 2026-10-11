@@ -8,6 +8,9 @@ import plistlib
 from urllib.parse import urlsplit
 from zipfile import ZipFile
 
+# Pin the standard YouTube icon for all SideStore source updates.
+YOUTUBE_ICON_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/YouTube_social_white_squircle_%282024%29.svg/500px-YouTube_social_white_squircle_%282024%29.svg.png"
+
 
 def ipa_metadata(path: pathlib.Path):
     with ZipFile(path) as archive:
@@ -52,10 +55,13 @@ def main():
             "bundleIdentifier": bundle_id,
             "developerName": "yossi132",
             "localizedDescription": "Personal YouMod-enhanced YouTube builds.",
-            "iconURL": "https://raw.githubusercontent.com/yossi132/YouMod/main/Icon.png",
+            "iconURL": YOUTUBE_ICON_URL,
             "versions": [],
         }
         apps.append(app)
+
+    # Restore the standard YouTube icon even when older source data exists.
+    app["iconURL"] = YOUTUBE_ICON_URL
 
     release = {
         "version": version,
