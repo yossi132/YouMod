@@ -446,18 +446,34 @@ jobs:
             echo "::error::Published IPA is not yet anonymously downloadable; source unchanged"
             exit 1
           fi
-          python3 sidestore-publisher/.github/scripts/update_sidestore_source.py \
-            --ipa "$IPA_FILE" \
-            --source sidestore-publisher/source.json \
-            --download-url "$DOWNLOAD_URL"
+          # Only this separate checkout is reset; the built IPA is untouched.
           cd sidestore-publisher
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add source.json
-          if ! git diff --cached --quiet; then
+          # Regenerate from the latest remote source on each attempt,
+          # preserving commits pushed while the IPA was building.
+          for attempt in 1 2 3 4 5; do
+            git fetch --no-tags origin "${GITHUB_REF_NAME}"
+            git reset --hard FETCH_HEAD
+            python3 .github/scripts/update_sidestore_source.py \
+              --ipa "../${IPA_FILE}" \
+              --source source.json \
+              --download-url "$DOWNLOAD_URL"
+            git add -- source.json
+            if git diff --cached --quiet; then
+              echo "SideStore source already up to date"
+              exit 0
+            fi
             git commit -m "Update SideStore source for ${RELEASE_TAG}"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
-          fi
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "SideStore source successfully published"
+              exit 0
+            fi
+            echo "::warning::Concurrent source change; retrying publish (attempt ${attempt}/5)"
+            sleep "$((attempt * 2))"
+          done
+          echo "::error::Could not publish SideStore source after five attempts"
+          exit 1
 
       - name: Job Summary - Build Complete
         run: |
