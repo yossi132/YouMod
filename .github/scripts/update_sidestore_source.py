@@ -35,6 +35,7 @@ def main():
     parser.add_argument("--ipa", type=pathlib.Path, required=True)
     parser.add_argument("--source", type=pathlib.Path, required=True)
     parser.add_argument("--download-url", required=True)
+    parser.add_argument("--youmod-version", default="")
     args = parser.parse_args()
 
     if urlsplit(args.download_url).scheme != "https":
@@ -65,9 +66,17 @@ def main():
 
     release = {
         "version": version,
-        "date": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d"),
+        "date": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
         "downloadURL": args.download_url,
         "size": args.ipa.stat().st_size,
+        "localizedDescription": (
+            f"YouTube {version} with YouMod {args.youmod_version}. Includes YouMod playback "
+            "and interface customization, SponsorBlock, and the optional tweaks "
+            "selected for this build."
+            if args.youmod_version else
+            f"YouTube {version} with YouMod. Includes playback and interface "
+            "customization, SponsorBlock, and the optional tweaks selected for this build."
+        ),
     }
     previous = [item for item in app.get("versions", []) if item.get("version") != version]
     app["versions"] = [release, *previous]
