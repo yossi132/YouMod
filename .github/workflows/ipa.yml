@@ -98,7 +98,7 @@ on:
 
       publish_to_sidestore:
         description: "Publish IPA in a PUBLIC release and update SideStore source; only if you have redistribution rights"
-        default: false
+        default: true
         required: false
         type: boolean
 
